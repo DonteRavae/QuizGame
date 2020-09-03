@@ -26,7 +26,7 @@ func main() {
 				numCorrect++
 			}
 		} else {
-			exit("Please enter a number.")
+			exit("Please enter a number greater than 0.")
 		}
 	}
 
