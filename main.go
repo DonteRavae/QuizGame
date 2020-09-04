@@ -7,26 +7,50 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 )
 
+type problem struct {
+	q string
+	a string
+}
+
 func main() {
-	var csvPath = flag.String("csvPath", "problems.csv", "a csv file in the format of 'question, answer'")
+	//Flags setup
+	csvPath := flag.String("csvPath", "problems.csv", "a csv file in the format of 'question, answer'")
+	timeLimit := flag.Int("timeLimit", 30, "the time limit for the quiz in seconds")
 	flag.Parse()
-	var numCorrect int
+
 	records := readCsvFile(*csvPath)
 	problems := parseRecords(records)
 
+	timer := time.NewTimer(time.Duration(*timeLimit) * time.Second)
+
+	var numCorrect int
+
 	for i, val := range problems {
 		fmt.Printf("Problem #%v: %s = ", i+1, val.q)
-		scanner := bufio.NewScanner(os.Stdin)
-		scanner.Scan()
-		res := scanner.Text()
-		if len(res) > 0 {
-			if res == val.a {
-				numCorrect++
+		answerCh := make(chan string)
+
+		go func() {
+			scanner := bufio.NewScanner(os.Stdin)
+			scanner.Scan()
+			answerCh <- scanner.Text()
+
+		}()
+
+		select {
+		case <-timer.C:
+			fmt.Printf("\nYou scored %d out of %d.", numCorrect, len(records))
+			return
+		case answer := <-answerCh:
+			if len(answer) > 0 {
+				if answer == val.a {
+					numCorrect++
+				}
+			} else {
+				exit("Please enter a number greater than 0.")
 			}
-		} else {
-			exit("Please enter a number greater than 0.")
 		}
 	}
 
@@ -63,11 +87,6 @@ func parseRecords(records [][]string) []problem {
 	}
 
 	return ret
-}
-
-type problem struct {
-	q string
-	a string
 }
 
 func exit(msg string) {
