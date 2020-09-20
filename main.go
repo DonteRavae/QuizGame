@@ -41,7 +41,7 @@ func main() {
 
 		select {
 		case <-timer.C:
-			fmt.Printf("\nYou scored %d out of %d.", numCorrect, len(records))
+			fmt.Printf("\nYou scored %d out of %d.\n", numCorrect, len(records))
 			return
 		case answer := <-answerCh:
 			if len(answer) > 0 {
@@ -54,7 +54,7 @@ func main() {
 		}
 	}
 
-	fmt.Printf("You scored %d out of %d.", numCorrect, len(records))
+	fmt.Printf("You scored %d out of %d.\n", numCorrect, len(records))
 }
 
 func readCsvFile(filePath string) (records [][]string) {
